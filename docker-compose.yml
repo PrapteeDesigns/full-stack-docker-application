@@ -1,0 +1,41 @@
+services:
+
+  backend:
+    build: ./backend
+    container_name: node_backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: react_frontend
+    ports:
+        - "3001:3001"
+    depends_on:
+        - backend
+    restart: always
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db1
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: testdb
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: always    
+
+volumes:
+  mysql_data:
